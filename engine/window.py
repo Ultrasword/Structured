@@ -13,6 +13,7 @@ FLAGS = 0
 DEPTH = 0
 VSYNC = 0
 
+INSTANCE_CHANGED = True
 GLOBAL_CLOCK = None
 
 # framebuffer scale and stuff
@@ -28,7 +29,8 @@ def create_instance(t, w, h, f=0, b=32, v=1, framebuffer=False):
         pygame.init()
         INITIALIZED = True
         INSTANCE = pygame.display.set_mode((w, h), flags=f, depth=b, vsync=v)
-        FRAMEBUFFER = pygame.Surface((w, h)).convert()
+        if framebuffer:
+            FRAMEBUFFER = pygame.Surface((w, h)).convert()
         pygame.display.set_caption(t)
     else:
         INSTANCE = pygame.display.set_mode((w, h), flags=f, depth=b, vsync=v)
@@ -75,3 +77,20 @@ def create_clock(FPS):
     global GLOBAL_CLOCK
     GLOBAL_CLOCK = pygame.time.Clock()
 
+
+def fill_buffer(color):
+    """fill instance framebuffer"""
+    global INSTANCE_CHANGED
+    FRAMEBUFFER.fill(color)
+    INSTANCE_CHANGED = True
+
+
+def push_buffer(offset):
+    """push teh framebuffer onto the window"""
+    INSTANCE.blit(FRAMEBUFFER, offset)
+
+def draw(surface, pos):
+    """if window was changed"""
+    global INSTANCE_CHANGED
+    FRAMEBUFFER.blit(surface, pos)
+    INSTANCE_CHANGED = True

@@ -18,12 +18,13 @@ window.create_clock(clock.FPS)
 running = True
 while running:
     # updates
-    window.FRAMEBUFFER.fill(background)
+    window.fill_buffer(background)
     
 
     # render
-    window.INSTANCE.blit(window.FRAMEBUFFER, (0,0))
-    pygame.display.update()
+    if window.INSTANCE_CHANGED:
+        window.push_buffer((0,0))
+        pygame.display.flip()
 
     # update keyboard
     user_input.update()
