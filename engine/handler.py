@@ -6,6 +6,7 @@ ID_COUNTER = 0
 
 def get_object_id():
     """get an object id"""
+    global ID_COUNTER
     ID_COUNTER += 1
     return ID_COUNTER
 
@@ -36,7 +37,6 @@ class PersistentObject:
 
 
 
-
 class Handler:
     """
     A persistent object and non persistent object handler
@@ -61,6 +61,9 @@ class Handler:
         # non persistent objects
         self.objects = {}
         self.non_p_object_counter = 0
+
+        # updates
+        self.dirty = True
     
     def get_non_persist_id(self):
         """Generate a non persisting id for this specific handler"""
@@ -69,40 +72,23 @@ class Handler:
     
     def add_persist_entity(self, entity):
         """Add persistent entity"""
-        entity.id = get_object_id()
+        entity.object_id = get_object_id()
         self.p_objects[entity.id] = entity
     
     def add_entity(self, entity):
         """Add non-persisting entity"""
-        entity.id = get_object_id()
+        entity.object_id = get_object_id()
         self.objects[entity.id] = entity
     
     def add_entity_auto(self, entity):
         """Add entity and auto select where it should go"""
         if instanceof(entity, PersistentObject):
             self.p_objects[entity.id] = entity
-            entity.id = get_object_id()
+            entity.object_id = get_object_id()
         else:
-            entity.id = self.get_non_persist_id()
+            entity.object_id = self.get_non_persist_id()
             self.objects[entity.id] = entity
 
-    def handle_entities(self, window, dt):
-        """
-        Handle entities
-        
-        1. Update entities
-            - pass through dt
-        2. Render entities
-            - pass through window
-        """
-        for eid, entity in self.p_objects.items():
-            entity.update(dt)
-            entity.render(window)
-        
-        for eid, entity in self.objects.items():
-            entity.update(dt)
-            entity.render(window)
-    
     def remove_persistent_entity(self, eid):
         """Can only remove persistent entities"""
         if eid in self.p_objects:
@@ -113,6 +99,22 @@ class Handler:
         if eid in self.objects:
             self.objects.pop(eid)
         
+    def handle_entities(self, dt):
+        """
+        Handle entities
+        
+        1. Update entities
+            - pass through dt
+        2. Render entities
+            - pass through window
+        """
+        for eid, entity in self.p_objects.items():
+            entity.update(dt)
+            entity.render()
+        
+        for eid, entity in self.objects.items():
+            entity.update(dt)
+            entity.render()
 
 
 

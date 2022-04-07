@@ -80,14 +80,16 @@ def create_clock(FPS):
 
 def fill_buffer(color):
     """fill instance framebuffer"""
-    global INSTANCE_CHANGED
+    global INSTANCE
     FRAMEBUFFER.fill(color)
-    INSTANCE_CHANGED = True
 
 
 def push_buffer(offset):
-    """push teh framebuffer onto the window"""
+    """push the framebuffer onto the window"""
+    global INSTANCE_CHANGED
     INSTANCE.blit(FRAMEBUFFER, offset)
+    INSTANCE_CHANGED = False
+
 
 def draw(surface, pos):
     """if window was changed"""
