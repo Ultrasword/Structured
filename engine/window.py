@@ -54,14 +54,35 @@ def get_instance():
     return INSTANCE
 
 
+def get_instance_for_draw():
+    """Return the instance and set chagned to True"""
+    global INSTANCE_CHANGED
+    INSTANCE_CHANGED = True
+    return INSTANCE
+
+
+def fill_instance(color):
+    """Fill instance with solid color"""
+    global INSTANCE_CHANGED
+    INSTANCE_CHANGED = True
+    INSTANCE.fill(color)
+
+
 def change_framebuffer(w:int, h:int, f:int):
     """change a framebuffer"""
     global FRAMEBUFFER
-    FRAMEBUFFER = pygame.Surface((w, h), flags=f)
+    FRAMEBUFFER = pygame.Surface((w, h), flags=f).convert()
 
 
 def get_framebuffer():
     """returns the framebuffer"""
+    return FRAMEBUFFER
+
+
+def get_framebuffer_for_draw():
+    """Return framebuffer and set changed to True"""
+    global INSTANCE_CHANGED
+    INSTANCE_CHANGED = True
     return FRAMEBUFFER
 
 
@@ -91,8 +112,15 @@ def push_buffer(offset):
     INSTANCE_CHANGED = False
 
 
-def draw(surface, pos):
-    """if window was changed"""
+def draw_buffer(surface, pos):
+    """draw onto framebuffer"""
     global INSTANCE_CHANGED
     FRAMEBUFFER.blit(surface, pos)
     INSTANCE_CHANGED = True
+
+
+def draw(surface, pos):
+    """draw directly onto instance"""
+    global INSTANCE_CHANGED
+    INSTANCE_CHANGED = True
+    INSTANCE.blit(surface, pos)

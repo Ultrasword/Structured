@@ -12,34 +12,32 @@ window.change_framebuffer(1280, 720, pygame.SRCALPHA)
 
 
 # init libraries
-user_block.setup()
+# user_block.setup()
 
 
 
 HANDLER = handler.Handler()
 
-HANDLER.add_persist_entity(user_block.UserBin((0,0), (100,100)))
+HANDLER.add_persist_entity(user_block.UserBin((100,100), (300,300)))
+# HANDLER.add_persist_entity(user_block.UserBin((500, 100), (400, 200)))
 
 
 clock.start(fps=30)
 window.create_clock(clock.FPS)
 running = True
 while running:
+    # fill instance
+    window.get_instance().fill(background)
+
     # updates
-    window.fill_buffer(background)
     HANDLER.handle_entities(clock.delta_time)
-
-    draw.DEBUG_DRAW_LINES(window.FRAMEBUFFER, (255, 0, 0), True, ((100, 100), (300, 100), (300, 300), (100, 300)), 1)
-    draw.DRAW_RECT(window.FRAMEBUFFER, user_block.DEFAULT_THEME_COLOR, (100, 100, 300, 300), 0, user_block.CURVE_BORDER_RADIUS)
-
     # render
     if window.INSTANCE_CHANGED:
-        window.push_buffer((0,0))
-        pygame.display.flip()
+        pygame.display.update()
+        window.INSTANCE_CHANGED = False
 
-    # update keyboard
+        # update keyboard
     user_input.update()
-
     # for loop through events
     for e in pygame.event.get():
         # handle different events
@@ -65,13 +63,20 @@ while running:
             window.handle_resize(e)
             user_input.update_ratio(window.WIDTH, window.HEIGHT, window.ORIGINAL_WIDTH, window.ORIGINAL_HEIGHT)
         elif e.type == pygame.WINDOWMAXIMIZED:
-            pass
+            # window maximized
+            window.get_instance().fill(background)
+            # re render all entities
+            HANDLER.render_all()
+            # push frame
+            pygame.display.update()
+            # prevent re push
+            window.INSTANCE_CHANGED = False
         elif e.type == pygame.WINDOWMINIMIZED:
+            # window minimized
             clock.FPS = 10
         elif e.type == pygame.WINDOWRESTORED:
+            # window restored from minimization
             clock.FPS = 30
-
-    # print(user_input.get_mouse_pos())
 
     # update clock
     clock.update()

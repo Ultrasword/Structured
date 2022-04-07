@@ -1,8 +1,8 @@
-from engine import handler, state, filehandler, user_input, draw, window
+import pygame
+from engine import handler, state, filehandler, user_input, draw, window, core_utils
 
 
 DEFAULT_THEME_COLOR = (44, 74, 94)
-CURVE_BORDER_RADIUS = 10
 
 class UserBlock(handler.PersistentObject):
     """
@@ -29,24 +29,25 @@ class UserBlock(handler.PersistentObject):
         """standard update function"""
         pass
 
-    def render(self):
-        """Render the object"""
+    def handle_changes(self):
+        """handle changes in transform or rotation, etc"""
         if self.transform[0] or self.transform[1]:
             self.dirty = True
             self.pos[0] += self.transform[0]
             self.pos[1] += self.transform[1]
             self.transform[0] = 0
             self.transform[1] = 0
+
+    def render(self):
+        """Render the object"""
         if self.dirty:
             self.dirty = False
             window.draw(self.sprite, self.pos)
 
-    def change_sprite(self, new):
+    def change_sprite(self, new, size: tuple):
         """Change the sprite"""
-        self.sprite = new
+        self.sprite = filehandler.scale(new, size)
         self.dirty = True
-
-DEFAULT_SOLID_BIN = None
 
 
 class UserBin(UserBlock):
@@ -64,9 +65,10 @@ class UserBin(UserBlock):
         # we can get the actual child objects from handler
         self.children = []
 
-        # set to default background
-        self.change_sprite(DEFAULT_SOLID_BIN)
-    
+        # create pygame rect object for easy rendering
+        self.rect = core_utils.make_pygame_rect(self.pos[0], self.pos[1], self.area[0], self.area[1])
+        self.curve_radius = self.area[0] // 8
+
     def add_child(self, child_id: int):
         """Add a child to the user bin - O(n) time"""
         self.children.append(child_id)
@@ -77,14 +79,33 @@ class UserBin(UserBlock):
     
     def update(self, dt):
         """Update the userbin"""
-        self.transform[0] += 30 * dt
-        pass
+        if user_input.is_key_pressed(pygame.K_a):
+            self.transform[0] -= 50 * dt
+        if user_input.is_key_pressed(pygame.K_d):
+            self.transform[0] += 50 * dt
+        if user_input.is_key_pressed(pygame.K_w):
+            self.transform[1] -= 50 * dt
+        if user_input.is_key_pressed(pygame.K_s):
+            self.transform[1] += 50 * dt
+    
+    def handle_changes(self):
+        """Handle changes made in position"""
+        if self.transform[0] or self.transform[1]:
+            self.dirty = True
+            self.pos[0] += self.transform[0]
+            self.pos[1] += self.transform[1]
+            self.rect.x = self.pos[0]
+            self.rect.y = self.pos[1]
+            self.transform[0] = 0
+            self.transform[1] = 0
 
-
-
-def setup():
-    global DEFAULT_SOLID_BIN
-    DEFAULT_SOLID_BIN = filehandler.make_surface(100, 100, draw.EMPTY_ALPHA)
-    draw.DRAW_RECT(DEFAULT_SOLID_BIN, DEFAULT_THEME_COLOR, (0, 0, 100, 100), 0, CURVE_BORDER_RADIUS)
+    def render(self):
+        """Render UserBin Object"""
+        if self.dirty:
+            # we have positional data, area data, and color data
+            # draw using pygame built in functions
+            # TODO - text renderering
+            draw.DRAW_RECT(window.get_instance_for_draw(), DEFAULT_THEME_COLOR, self.rect, 0, self.curve_radius)
+            self.dirty = False
 
 

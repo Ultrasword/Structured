@@ -34,7 +34,18 @@ class PersistentObject:
     def id(self):
         """Get the object id"""
         return self.object_id
-
+    
+    def update(self, dt):
+        """Default update method"""
+        pass
+    
+    def handle_changes(self):
+        """Default handle changes method"""
+        pass
+    
+    def render(self):
+        """Default render function"""
+        pass
 
 
 class Handler:
@@ -110,10 +121,23 @@ class Handler:
         """
         for eid, entity in self.p_objects.items():
             entity.update(dt)
+            entity.handle_changes()
             entity.render()
         
         for eid, entity in self.objects.items():
             entity.update(dt)
+            entity.handle_changes()
+            entity.render()
+
+    def render_all(self):
+        """Render all entities in case needed to"""
+        # usually used when window resized
+        for eid, entity in self.p_objects.items():
+            entity.dirty = True
+            entity.render()
+        
+        for eid, entity in self.objects.items():
+            entity.dirty = True
             entity.render()
 
 
